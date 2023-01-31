@@ -6,7 +6,7 @@ from io         import open
 setup(
     # ? Genel Bilgiler
     name         = "KeeneticPy",
-    version      = "0.1",
+    version      = "0.2",
     url          = "https://github.com/keyiflerolsun/KeeneticPy",
     description  = "Python Lib for Keenetic Routers",
     keywords     = ["KeeneticPy", "KekikAkademi", "keyiflerolsun"],
@@ -28,8 +28,7 @@ setup(
         "pip",
         "setuptools",
         "wheel",
-        "requests",
-        "hashlib"
+        "requests"
     ],
 
     # ? PyPI Bilgileri
