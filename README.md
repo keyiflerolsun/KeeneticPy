@@ -32,12 +32,22 @@ pip install -U KeeneticPy
 ## <img src="https://www.akashtrehan.com/assets/images/emoji/terminal.png" height="32" align="center"> Kullanım
 
 ```python
+from Kekik.cli  import konsol
 from KeeneticPy import Keenetic
 
 hero = Keenetic(sifre="cokomellisifre")
+
+konsol.print(hero.system())
+konsol.print(hero.version())
+
 konsol.print(hero.interface()["Dsl0"])
 konsol.print(hero.interface()["PPPoE0"])
+
+konsol.print("\n".join(hero.dsl_stats()["parse"]["message"]))
+
 konsol.print(hero.hosts())
+
+konsol.print(hero.dsl_reset())
 ```
 
 ## 💸 Bağış Yap

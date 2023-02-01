@@ -14,7 +14,7 @@ class Keenetic:
             assert False, "Yetkisiz Erişim."
 
     def __yetkilendir(self, kullanici:str, sifre:str) -> bool:
-        istek = self.__oturum.get(url=f"{self.__panel}/auth")
+        istek = self.__oturum.get(f"{self.__panel}/auth")
         if istek.status_code == 200:
             return True
 
@@ -34,16 +34,16 @@ class Keenetic:
         return istek.status_code == 200
 
     def interface(self) -> dict:
-        return self.__oturum.get(url=f"{self.__rci}show/interface").json()
+        return self.__oturum.get(f"{self.__rci}show/interface").json()
 
     def system(self) -> dict:
-        return self.__oturum.get(url=f"{self.__rci}show/system").json()
+        return self.__oturum.get(f"{self.__rci}show/system").json()
 
     def version(self) -> dict:
-        return self.__oturum.get(url=f"{self.__rci}show/version").json()
+        return self.__oturum.get(f"{self.__rci}show/version").json()
 
     def hosts(self) -> dict:
-        return self.__oturum.get(url=f"{self.__rci}show/ip/hotspot").json()
+        return self.__oturum.get(f"{self.__rci}show/ip/hotspot").json()
 
     def dsl_stats(self) -> dict:
         return self.__oturum.post(
