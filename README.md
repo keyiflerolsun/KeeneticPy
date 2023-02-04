@@ -43,6 +43,8 @@ konsol.print(hero.version())
 konsol.print(hero.interface()["Dsl0"])
 konsol.print(hero.interface()["PPPoE0"])
 
+konsol.print(hero.global_ip())
+
 konsol.print("\n".join(hero.dsl_stats()["parse"]["message"]))
 
 konsol.print(hero.hosts())

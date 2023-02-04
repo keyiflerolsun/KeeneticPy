@@ -69,3 +69,28 @@ class Keenetic:
         )
 
         return kapama_istegi.status_code == 200 and acma_istegi.status_code == 200
+
+    def global_ip(self) -> dict:
+        veri = self.__oturum.post(
+            url  = f"{self.__rci}",
+            json = {
+                "ip"    : {"http":{"ssl":{"acme":{"list":{}}}}},
+                "show"  : {"clock":{"date":{}},"schedule":{},"internet":{"status":{}},"version":{},"system":{},"interface":{},"ip":{"name-server":{},"route":{},"hotspot":{"details":"wireless"}},"rc":{"interface":{},"service":{},"user":{},"components":{"auto-update":{}},"ip":{"http":{}},"dlna":{}},"ndns":{},"acme":{},"dyndns":{},"ping-check":{},"cifs":{},"printers":{},"ipv6":{"addresses":{},"prefixes":{},"routes":{}},"dlna":{},"usb":{},"media":{}},
+                "ls"    : {},
+                "whoami": {}
+            }
+        ).json()
+
+        for ls in veri["ls"]["entry"].copy().keys():
+            if ls in ['flash:', 'temp:', 'proc:', 'sys:', 'log', 'running-config', 'startup-config', 'default-config', 'ndm:', 'debug:', 'storage:']:
+                del veri["ls"]["entry"][ls]
+
+        return {
+            # "whoami"  : veri["whoami"],
+            # "keedns"  : veri["ip"]["http"]["ssl"]["acme"]["list"]["certificate"],
+            # "devices" : veri["ls"]["entry"],
+            # "sbm"     : veri["show"]["cifs"]["share"],
+            # "dlna"    : veri["show"]["dlna"]["directory"],
+            "ipv4"    : veri["show"]["interface"]["PPPoE0"]["address"],
+            "ipv6"    : [adres for adres in veri["show"]["ipv6"]["addresses"]["address"] if adres["interface"] == "PPPoE0"][0]["address"],
+        }
