@@ -4,7 +4,7 @@ from Kekik.cli import konsol
 from requests  import Session
 from hashlib   import md5, sha256
 from zipfile   import ZipFile, ZIP_DEFLATED
-from os        import remove, listdir, path
+from os        import remove, listdir
 from datetime  import datetime
 from Kekik     import slugify
 
@@ -104,7 +104,7 @@ class Keenetic:
         tarih_str = dosya_adi.split("_")[-1].replace(".zip", "")
         return datetime.strptime(tarih_str, "%d-%m-%Y")
 
-    def backup(self, maksimum_yedek=5):
+    def backup(self, maksimum_yedek=5) -> str:
         if not self._yetki:
             assert False, "Yetkisiz Erişim."
 
@@ -148,3 +148,5 @@ class Keenetic:
             konsol.log(f"[yellow][~] {yedek} dosyası silindi!")
 
         konsol.log(f"[green][+] {zip_dosyasi} başarıyla oluşturuldu!")
+
+        return zip_dosyasi
