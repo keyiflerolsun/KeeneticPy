@@ -37,6 +37,8 @@ from KeeneticPy import Keenetic
 
 hero = Keenetic(sifre="cokomellisifre")
 
+hero.backup(maksimum_yedek=2)
+
 konsol.print(hero.system())
 konsol.print(hero.version())
 

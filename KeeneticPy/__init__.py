@@ -1,7 +1,12 @@
 # Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
-from requests import Session
-from hashlib  import md5, sha256
+from Kekik.cli import konsol
+from requests  import Session
+from hashlib   import md5, sha256
+from zipfile   import ZipFile, ZIP_DEFLATED
+from os        import remove, listdir, path
+from datetime  import datetime
+from Kekik     import slugify
 
 class Keenetic:
     def __init__(self, kullanici:str="admin", sifre:str="", ip:str="192.168.1.1"):
@@ -74,15 +79,15 @@ class Keenetic:
         veri = self.__oturum.post(
             url  = f"{self.__rci}",
             json = {
-                "ip"    : {"http":{"ssl":{"acme":{"list":{}}}}},
-                "show"  : {"clock":{"date":{}},"schedule":{},"internet":{"status":{}},"version":{},"system":{},"interface":{},"ip":{"name-server":{},"route":{},"hotspot":{"details":"wireless"}},"rc":{"interface":{},"service":{},"user":{},"components":{"auto-update":{}},"ip":{"http":{}},"dlna":{}},"ndns":{},"acme":{},"dyndns":{},"ping-check":{},"cifs":{},"printers":{},"ipv6":{"addresses":{},"prefixes":{},"routes":{}},"dlna":{},"usb":{},"media":{}},
-                "ls"    : {},
-                "whoami": {}
+                "ip"     : {"http":{"ssl":{"acme":{"list":{}}}}},
+                "show"   : {"clock":{"date":{}},"schedule":{},"internet":{"status":{}},"version":{},"system":{},"interface":{},"ip":{"name-server":{},"route":{},"hotspot":{"details":"wireless"}},"rc":{"interface":{},"service":{},"user":{},"components":{"auto-update":{}},"ip":{"http":{}},"dlna":{}},"ndns":{},"acme":{},"dyndns":{},"ping-check":{},"cifs":{},"printers":{},"ipv6":{"addresses":{},"prefixes":{},"routes":{}},"dlna":{},"usb":{},"media":{}},
+                "ls"     : {},
+                "whoami" : {}
             }
         ).json()
 
         for ls in veri["ls"]["entry"].copy().keys():
-            if ls in ['flash:', 'temp:', 'proc:', 'sys:', 'log', 'running-config', 'startup-config', 'default-config', 'ndm:', 'debug:', 'storage:']:
+            if ls in ["flash:", "temp:", "proc:", "sys:", "log", "running-config", "startup-config", "default-config", "ndm:", "debug:", "storage:"]:
                 del veri["ls"]["entry"][ls]
 
         return {
@@ -94,3 +99,52 @@ class Keenetic:
             "ipv4"    : veri["show"]["interface"]["PPPoE0"]["address"],
             "ipv6"    : [adres for adres in veri["show"]["ipv6"]["addresses"]["address"] if adres["interface"] == "PPPoE0"][0]["address"],
         }
+
+    def __zip_tarih_al(self, dosya_adi:str) -> datetime:
+        tarih_str = dosya_adi.split("_")[-1].replace(".zip", "")
+        return datetime.strptime(tarih_str, "%d-%m-%Y")
+
+    def backup(self, maksimum_yedek=5):
+        if not self._yetki:
+            assert False, "Yetkisiz Erişim."
+
+        tarih       = datetime.now().strftime("%d-%m-%Y")
+        cihaz       = self.version()
+        zip_dosyasi = f"{slugify(cihaz['description'])}_{slugify(cihaz['hw_version'])}_{tarih}.zip"
+        fw          = "firmware.bin"
+        config      = "startup-config.txt"
+
+        fw_istek = self.__oturum.get(f"{self.__panel}/ci/firmware")
+        if fw_istek.status_code != 200:
+            konsol.log(f"[red][!] {fw} İndirme Hatası: {fw_istek.status_code}")
+        else:
+            with open(fw, "wb") as dosya:
+                dosya.write(fw_istek.content)
+            konsol.log(f"[green][+] {fw} indirildi!")
+
+        config_istek = self.__oturum.get(f"{self.__panel}/ci/startup-config")
+        if config_istek.status_code != 200:
+            konsol.log(f"[red][!] {config} İndirme Hatası: {config_istek.status_code}")
+        else:
+            with open(config, "wb") as dosya:
+                dosya.write(config_istek.content)
+            konsol.log(f"[green][+] {config} indirildi!")
+
+        with ZipFile(zip_dosyasi, "w", ZIP_DEFLATED) as arsiv:
+            arsiv.write(fw)
+            arsiv.write(config)
+
+        remove(config)
+        remove(fw)
+
+        yedekler = sorted(
+            [dosya for dosya in listdir() if dosya.endswith(".zip") and dosya.startswith(zip_dosyasi.split("_")[0])],
+            key     = self.__zip_tarih_al,
+            reverse = True
+        )
+
+        for yedek in yedekler[maksimum_yedek:][::-1]:
+            remove(yedek)
+            konsol.log(f"[yellow][~] {yedek} dosyası silindi!")
+
+        konsol.log(f"[green][+] {zip_dosyasi} başarıyla oluşturuldu!")
