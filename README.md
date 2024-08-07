@@ -59,12 +59,11 @@ konsol.print(modem.dsl_reset())
 konsol.print(modem.get_static_routes())
 
 konsol.print(modem.add_static_route(comment="bakalim.io", host="145.53.10.71", interface="Wireguard2"))
+konsol.print(modem.del_static_route(comment="bakalim.io", host="145.53.10.71", interface="Wireguard2"))
+
 
 konsol.print(modem.add_static_route(comment="bakalim.io", network="145.53.10.0", mask="255.255.255.0", interface="Wireguard2"))
-
 konsol.print(modem.del_static_route(comment="bakalim.io", network="145.53.10.0", mask="255.255.255.0", interface="Wireguard2"))
-
-konsol.print(modem.del_static_route(comment="bakalim.io", host="145.53.10.71", interface="Wireguard2"))
 
 
 for route in modem.get_static_routes():
@@ -73,10 +72,10 @@ for route in modem.get_static_routes():
         konsol.print(modem.del_static_route(**route))
 
 
-konsol.print(modem.add_route_with_asn(asn=32934, interface="Wireguard2"))
-
-
 konsol.print(modem.add_route_with_domain(domain="x.com", interface="Wireguard2"))
+
+
+konsol.print(modem.add_route_with_asn(asn=32934, interface="Wireguard2"))
 ```
 
 ## 💸 Bağış Yap
