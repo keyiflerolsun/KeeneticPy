@@ -118,7 +118,7 @@ Bir statik rota eklemek için `add_static_route` metodunu kullanabilirsiniz:
 > Arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini [.get_interface_names()](#arayüz-i̇simlerini-listeleme) fonksiyonunu kullanarak öğrenebilirsiniz.
 
 ```python
-modem.add_static_route(comment="örnek.io", host="192.168.1.100", interface="Wireguard2")
+modem.add_static_route(comment="example.com", host="192.168.1.100", interface="Wireguard2")
 ```
 
 #### Statik Rota Silme:
@@ -126,7 +126,7 @@ modem.add_static_route(comment="örnek.io", host="192.168.1.100", interface="Wir
 Eklenmiş bir statik rotayı silmek için `del_static_route` metodunu kullanabilirsiniz:
 
 ```python
-modem.del_static_route(comment="örnek.io", host="192.168.1.100", interface="Wireguard2")
+modem.del_static_route(comment="example.com", host="192.168.1.100", interface="Wireguard2")
 ```
 
 #### **kwargs Kullanımı ile Statik Rota Silme:
