@@ -37,7 +37,7 @@ pip install -U KeeneticPy
 from Kekik.cli  import konsol
 from KeeneticPy import Keenetic
 
-modem = Keenetic(user="admin", password="cokomellisifre", ip="192.168.1.1")
+modem = Keenetic(user="admin", password="cokomellisifre", panel="http://192.168.1.1")
 
 modem.backup(maks_backup=2)
 

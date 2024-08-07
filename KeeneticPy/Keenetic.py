@@ -10,9 +10,9 @@ from Kekik     import slugify
 from .BGPTools import cidr2mask, asn2cidr, domain2ip
 
 class Keenetic:
-    def __init__(self, user:str="admin", password:str="", ip:str="192.168.1.1"):
+    def __init__(self, user:str="admin", password:str="", panel:str="http://192.168.1.1"):
         self.__oturum = Client()
-        self.__panel  = f"http://{ip}"
+        self.__panel  = panel
         self.__rci    = f"{self.__panel}/rci/"
 
         self._yetki   = self.__yetkilendir(user, password)
