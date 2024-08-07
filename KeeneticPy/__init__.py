@@ -157,6 +157,15 @@ class Keenetic:
             json = {"show":{"ip":{"route":{}}}}
         ).json().get("ip", {}).get("route", [])
 
+    @staticmethod
+    def cidr_to_mask(cidr):
+        """ https://bgp.tools/as/32934#prefixes """
+        ip, prefix = cidr.split("/")
+        prefix     = int(prefix)
+        mask       = (0xFFFFFFFF >> (32 - prefix)) << (32 - prefix)
+
+        return f"{(mask >> 24) & 0xFF}.{(mask >> 16) & 0xFF}.{(mask >> 8) & 0xFF}.{mask & 0xFF}"
+
     def add_static_route(self, comment:str, host:str=None, network:str=None, mask:str=None, interface:str="Wireguard2") -> bool:
         payload = None
 
