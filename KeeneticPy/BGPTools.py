@@ -11,8 +11,10 @@ def cidr2mask(cidr:str) -> str:
 
     return f"{(mask >> 24) & 0xFF}.{(mask >> 16) & 0xFF}.{(mask >> 8) & 0xFF}.{mask & 0xFF}"
 
-def asn2cidr(asn:int) -> dict:
-    if not isinstance(asn, int):
+def asn2cidr(asn:str|int) -> dict:
+    try:
+        asn = int(asn)
+    except ValueError:
         return {}
 
     oturum = Client()

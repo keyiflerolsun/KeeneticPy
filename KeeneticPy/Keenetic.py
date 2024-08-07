@@ -189,7 +189,7 @@ class Keenetic:
 
         return istek.status_code == 200
 
-    def add_route_with_asn(self, asn:int, interface:str="Wireguard2"):
+    def add_route_with_asn(self, asn:str|int, interface:str="Wireguard2"):
         asn_data = asn2cidr(asn)
         if not asn_data:
             assert False, f"ASN {asn} için CIDR bilgisine ulaşılamıyor."
