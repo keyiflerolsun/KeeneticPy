@@ -153,10 +153,10 @@ class Keenetic:
         return zip_dosyasi
 
     def get_static_routes(self) -> list[dict[str, str]]:
-        return self.__oturum.get(
+        return self.__oturum.post(
             url  = f"{self.__rci}",
-            json = {"show":{"ip":{"route":{}}}}
-        ).json().get("ip", {}).get("route", [])
+            json = [{"show":{"rc":{"ip":{"route":{}}}}}]
+        ).json()[0].get("show", {}).get("rc", {}).get("ip", {}).get("route", [])
 
     def add_static_route(self, comment:str, host:str=None, network:str=None, mask:str=None, interface:str="Wireguard2") -> bool:
         payload = None

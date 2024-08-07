@@ -36,3 +36,13 @@ def asn2cidr(asn:str|int) -> dict:
 
 def domain2ip(domain:str) -> dict:
     return Domain2IP(domain).bilgi
+
+def ip2asname(ip:str) -> str:
+    oturum = Client()
+    istek  = oturum.get(f"https://bgp.tools/search?q={ip}", follow_redirects=True)
+    if istek.status_code != 200:
+        return ""
+
+    secici = Selector(istek.text)
+
+    return secici.css("p#network-number strong")[-1].css("::text").get()
