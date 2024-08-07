@@ -56,6 +56,9 @@ konsol.print(modem.hosts())
 konsol.print(modem.dsl_reset())
 
 
+konsol.print(modem.get_interface_names())
+
+
 konsol.print(modem.get_static_routes())
 
 konsol.print(modem.add_static_route(comment="bakalim.io", host="145.53.10.71", interface="Wireguard2"))

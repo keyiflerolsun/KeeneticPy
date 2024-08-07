@@ -42,6 +42,17 @@ class Keenetic:
     def interface(self) -> dict:
         return self.__oturum.get(f"{self.__rci}show/interface").json()
 
+    def get_interface_names(self) -> list[dict]:
+        return [
+            {
+                "name"        : value["interface-name"],
+                "type"        : value["type"],
+                "description" : value["description"]
+            }
+                for key, value in self.interface().items()
+                    if value.get("description")
+        ]
+
     def system(self) -> dict:
         return self.__oturum.get(f"{self.__rci}show/system").json()
 
