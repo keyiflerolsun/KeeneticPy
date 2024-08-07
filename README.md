@@ -115,7 +115,7 @@ print(interface_names)
 #### Statik Rota Ekleme:
 
 Bir statik rota eklemek için `add_static_route` metodunu kullanabilirsiniz:
-> Arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini `.get_interface_names()` fonksiyonunu kullanarak öğrenebilirsiniz.
+> Arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini [.get_interface_names()](#arayüz-i̇simlerini-listeleme) fonksiyonunu kullanarak öğrenebilirsiniz.
 
 ```python
 modem.add_static_route(comment="örnek.io", host="192.168.1.100", interface="Wireguard2")
@@ -147,7 +147,7 @@ for route in routes:
 #### Domain ile Rota Ekleme:
 
 Belirli bir domain için statik rota eklemek:
-> Arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini `.get_interface_names()` fonksiyonunu kullanarak öğrenebilirsiniz.
+> Arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini [.get_interface_names()](#arayüz-i̇simlerini-listeleme) fonksiyonunu kullanarak öğrenebilirsiniz.
 
 ```python
 modem.add_route_with_domain(domain="example.com", interface="Wireguard2")
@@ -156,7 +156,7 @@ modem.add_route_with_domain(domain="example.com", interface="Wireguard2")
 #### ASN ile Rota Ekleme:
 
 Belirli bir ASN için statik rota eklemek:
-> Arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini `.get_interface_names()` fonksiyonunu kullanarak öğrenebilirsiniz.
+> Arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini [.get_interface_names()](#arayüz-i̇simlerini-listeleme) fonksiyonunu kullanarak öğrenebilirsiniz.
 
 ```python
 modem.add_route_with_asn(asn=32934, interface="Wireguard2")
