@@ -189,14 +189,17 @@ class Keenetic:
 
         return istek.status_code == 200
 
-    def add_route_with_asn(self, asn:int, interface:str="Wireguard2") -> bool:
+    def add_route_with_asn(self, asn:int, interface:str="Wireguard2"):
         asn_data = asn2cidr(asn)
         if not asn_data:
             assert False, f"ASN {asn} için CIDR bilgisine ulaşılamıyor."
 
         for prefix in asn_data["prefixes"]:
             veri = {"comment": asn_data["company"], "network": prefix.split("/")[0], "mask": cidr2mask(prefix), "interface": interface}
-            return self.add_static_route(**veri)
+            if self.add_static_route(**veri):
+                konsol.log(f"[green][+] {prefix} » {veri.get('comment')} » başarıyla eklendi!")
+            else:
+                konsol.log(f"[red][!] {prefix} » {veri.get('comment')} » eklenemedi!")
 
     def add_route_with_domain(self, domain:str, interface:str="Wireguard2") -> bool:
         domain_data = domain2ip(domain)
@@ -210,11 +213,17 @@ class Keenetic:
         if domain_data.get("subnetler"):
             for subnet in domain_data["subnetler"]:
                 veri = {"comment": domain_data["domain"], "network": subnet.split("/")[0], "mask": cidr2mask(subnet), "interface": interface}
-                return self.add_static_route(**veri)
+                if self.add_static_route(**veri):
+                    konsol.log(f"[green][+] {subnet} » {veri.get('comment')} » başarıyla eklendi!")
+                else:
+                    konsol.log(f"[red][!] {subnet} » {veri.get('comment')} » eklenemedi!")
 
         for ip in domain_data["ipler"]:
             veri = {"comment": domain_data["domain"], "host": ip, "interface": interface}
-            return self.add_static_route(**veri)
+            if self.add_static_route(**veri):
+                konsol.log(f"[green][+] {ip} » {veri.get('comment')} » başarıyla eklendi!")
+            else:
+                konsol.log(f"[red][!] {ip} » {veri.get('comment')} » eklenemedi!")
 
     def del_static_route(self, comment:str, host:str=None, network:str=None, mask:str=None, interface:str="Wireguard2") -> bool:
         payload = None
