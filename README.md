@@ -33,53 +33,140 @@ pip install -U KeeneticPy
 
 ## <img src="https://www.akashtrehan.com/assets/images/emoji/terminal.png" height="32" align="center"> Kullanım
 
+### Keenetic Sınıfını Oluşturma
+
+Keenetic router'ınıza bağlanmak için aşağıdaki gibi bir `Keenetic` sınıfı örneği oluşturun:
+
 ```python
-from Kekik.cli  import konsol
 from KeeneticPy import Keenetic
 
 modem = Keenetic(user="admin", password="cokomellisifre", panel="http://192.168.1.1")
-
-modem.backup(maks_backup=2)
-
-konsol.print(modem.system())
-konsol.print(modem.version())
-
-konsol.print(modem.interface()["Dsl0"])
-konsol.print(modem.interface()["PPPoE0"])
-
-konsol.print(modem.global_ip())
-
-konsol.print("\n".join(modem.dsl_stats()["parse"]["message"]))
-
-konsol.print(modem.hosts())
-
-konsol.print(modem.dsl_reset())
-
-
-konsol.print(modem.get_interface_names())
-
-
-konsol.print(modem.get_static_routes())
-
-konsol.print(modem.add_static_route(comment="bakalim.io", host="145.53.10.71", interface="Wireguard2"))
-konsol.print(modem.del_static_route(comment="bakalim.io", host="145.53.10.71", interface="Wireguard2"))
-
-
-konsol.print(modem.add_static_route(comment="bakalim.io", network="145.53.10.0", mask="255.255.255.0", interface="Wireguard2"))
-konsol.print(modem.del_static_route(comment="bakalim.io", network="145.53.10.0", mask="255.255.255.0", interface="Wireguard2"))
-
-
-for route in modem.get_static_routes():
-    konsol.log(route)
-    if route.get("comment") == "bakalim.io":
-        konsol.print(modem.del_static_route(**route))
-
-
-konsol.print(modem.add_route_with_domain(domain="x.com", interface="Wireguard2"))
-
-
-konsol.print(modem.add_route_with_asn(asn=32934, interface="Wireguard2"))
 ```
+
+### Yedekleme Yapma
+
+Modem yapılandırma yedeği oluşturmak için `backup` fonksiyonunu kullanabilirsiniz. Aşağıdaki örnekte, maksimum 2 yedek dosyası saklanacaktır:
+
+```python
+modem.backup(maks_backup=2)
+```
+
+### Sistem ve Sürüm Bilgilerini Görüntüleme
+
+Modeminizin sistem ve sürüm bilgilerini almak için `system` ve `version` metodlarını kullanabilirsiniz:
+
+```python
+print(modem.system())
+print(modem.version())
+```
+
+### Arayüz Bilgilerini Görüntüleme
+
+Modeminizin DSL ve PPPoE arayüz bilgilerini görüntülemek için:
+
+```python
+print(modem.interface()["Dsl0"])
+print(modem.interface()["PPPoE0"])
+```
+
+### Global IP Bilgilerini Almak
+
+Router'ınızın global IP bilgilerini almak için:
+
+```python
+print(modem.global_ip())
+```
+
+### DSL İstatistiklerini Görüntüleme
+
+DSL bağlantınızla ilgili detaylı istatistikleri almak için:
+
+```python
+print("n".join(modem.dsl_stats()["parse"]["message"]))
+```
+
+### Hotspot Üzerindeki Bağlı Cihazları Listeleme
+
+Modeminizdeki Hotspot üzerinden bağlı cihazları görüntülemek için:
+
+```python
+print(modem.hosts())
+```
+
+### DSL Bağlantısını Sıfırlama
+
+DSL bağlantınızı sıfırlamak için:
+
+```python
+print(modem.dsl_reset())
+```
+
+### Statik Rotaları Yönetme
+
+#### Arayüz İsimlerini Listeleme:
+
+Modeminizin tanımlı arayüz isimlerini, türlerini ve açıklamalarını almak için:
+
+```python
+interface_names = modem.get_interface_names()
+print(interface_names)
+```
+
+#### Statik Rota Ekleme:
+
+Bir statik rota eklemek için `add_static_route` metodunu kullanabilirsiniz:
+> Ancak, arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini `.get_interface_names()` fonksiyonunu kullanarak öğrenebilirsiniz.
+
+```python
+modem.add_static_route(comment="örnek.io", host="192.168.1.100", interface="Wireguard2")
+```
+
+#### Statik Rota Silme:
+
+Eklenmiş bir statik rotayı silmek için `del_static_route` metodunu kullanabilirsiniz:
+
+```python
+modem.del_static_route(comment="örnek.io", host="192.168.1.100", interface="Wireguard2")
+```
+
+#### **kwargs Kullanımı ile Statik Rota Silme:
+
+Mevcut statik rotalarınızdan belirli bir yoruma sahip olanları silmek için:
+
+```python
+routes = modem.get_static_routes()
+
+for route in routes:
+    print(route)
+    if route.get("comment") == "bakalim.io":
+        print(modem.del_static_route(**route))
+```
+
+### Domain veya ASN ile Rota Ekleme
+
+#### Domain ile Rota Ekleme:
+
+Belirli bir domain için statik rota eklemek:
+> Ancak, arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini `.get_interface_names()` fonksiyonunu kullanarak öğrenebilirsiniz.
+
+```python
+modem.add_route_with_domain(domain="example.com", interface="Wireguard2")
+```
+
+#### ASN ile Rota Ekleme:
+
+Belirli bir ASN için statik rota eklemek:
+> Ancak, arayüz (interface) ismini doğru şekilde ayarladığınızdan emin olun. Arayüz isimlerini `.get_interface_names()` fonksiyonunu kullanarak öğrenebilirsiniz.
+
+```python
+modem.add_route_with_asn(asn=32934, interface="Wireguard2")
+```
+
+***
+
+Bu örnekler, KeeneticPy paketini nasıl kullanabileceğinizi ve çeşitli modem işlevlerini nasıl yönetebileceğinizi gösterir. Daha fazla bilgi için kaynak koduna göz atabilirsiniz.
+
+***
 
 ## 💸 Bağış Yap
 
