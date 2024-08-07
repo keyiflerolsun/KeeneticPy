@@ -4,6 +4,13 @@ from Kekik  import Domain2IP
 from httpx  import Client
 from parsel import Selector
 
+def cidr2mask(cidr:str) -> str:
+    ip, prefix = cidr.split("/")
+    prefix     = int(prefix)
+    mask       = (0xFFFFFFFF >> (32 - prefix)) << (32 - prefix)
+
+    return f"{(mask >> 24) & 0xFF}.{(mask >> 16) & 0xFF}.{(mask >> 8) & 0xFF}.{mask & 0xFF}"
+
 def asn2cidr(asn:int) -> dict:
     if not isinstance(asn, int):
         return {}
@@ -25,5 +32,5 @@ def asn2cidr(asn:int) -> dict:
         ]
     }
 
-def domain2ip(domain):
+def domain2ip(domain:str) -> dict:
     return Domain2IP(domain).bilgi

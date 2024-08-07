@@ -71,7 +71,6 @@ for route in modem.get_static_routes():
     konsol.log(route)
     if route.get("comment") == "bakalim.io":
         konsol.print(modem.del_static_route(**route))
-        break
 
 
 konsol.print(modem.add_route_with_asn(asn=32934, interface="Wireguard2"))

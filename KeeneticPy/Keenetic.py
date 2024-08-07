@@ -7,7 +7,7 @@ from zipfile   import ZipFile, ZIP_DEFLATED
 from os        import remove, listdir
 from datetime  import datetime
 from Kekik     import slugify
-from .         import asn2cidr, domain2ip
+from .         import cidr2mask, asn2cidr, domain2ip
 
 class Keenetic:
     def __init__(self, user:str="admin", password:str="", ip:str="192.168.1.1"):
@@ -158,15 +158,6 @@ class Keenetic:
             json = {"show":{"ip":{"route":{}}}}
         ).json().get("ip", {}).get("route", [])
 
-    @staticmethod
-    def cidr_to_mask(cidr):
-        """ https://bgp.tools/as/32934#prefixes """
-        ip, prefix = cidr.split("/")
-        prefix     = int(prefix)
-        mask       = (0xFFFFFFFF >> (32 - prefix)) << (32 - prefix)
-
-        return f"{(mask >> 24) & 0xFF}.{(mask >> 16) & 0xFF}.{(mask >> 8) & 0xFF}.{mask & 0xFF}"
-
     def add_static_route(self, comment:str, host:str=None, network:str=None, mask:str=None, interface:str="Wireguard2") -> bool:
         payload = None
 
@@ -204,7 +195,7 @@ class Keenetic:
             assert False, f"ASN {asn} için CIDR bilgisine ulaşılamıyor."
 
         for prefix in asn_data["prefixes"]:
-            veri = {"comment": asn_data["company"], "network": prefix.split("/")[0], "mask": Keenetic.cidr_to_mask(prefix), "interface": interface}
+            veri = {"comment": asn_data["company"], "network": prefix.split("/")[0], "mask": cidr2mask(prefix), "interface": interface}
             return self.add_static_route(**veri)
 
     def add_route_with_domain(self, domain:str, interface:str="Wireguard2") -> bool:
@@ -218,7 +209,7 @@ class Keenetic:
 
         if domain_data.get("subnetler"):
             for subnet in domain_data["subnetler"]:
-                veri = {"comment": domain_data["domain"], "network": subnet.split("/")[0], "mask": Keenetic.cidr_to_mask(subnet), "interface": interface}
+                veri = {"comment": domain_data["domain"], "network": subnet.split("/")[0], "mask": cidr2mask(subnet), "interface": interface}
                 return self.add_static_route(**veri)
 
         for ip in domain_data["ipler"]:
