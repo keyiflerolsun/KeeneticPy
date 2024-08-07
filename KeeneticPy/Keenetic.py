@@ -187,6 +187,8 @@ class Keenetic:
             ]
         )
 
+        self.clean_multiple_routes()
+
         return istek.status_code == 200
 
     def add_route_with_asn(self, asn:str|int, interface:str="Wireguard2"):
@@ -257,3 +259,16 @@ class Keenetic:
         )
 
         return istek.status_code == 200
+
+    def clean_multiple_routes(self):
+        eldekiler = set()
+
+        for route in self.get_static_routes():
+            veri = (route.get("network"), route.get("mask")) if route.get("network") else route.get("host")
+
+            if veri not in eldekiler:
+                eldekiler.add(veri)
+                continue
+    
+            konsol.log("[red][!] Eş bir kayıt bulundu ve silindi! » ", veri)
+            self.del_static_route(**route)
