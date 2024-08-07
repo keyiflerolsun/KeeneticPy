@@ -37,9 +37,9 @@ pip install -U KeeneticPy
 from Kekik.cli  import konsol
 from KeeneticPy import Keenetic
 
-modem = Keenetic(sifre="cokomellisifre")
+modem = Keenetic(user="admin", password="cokomellisifre", ip="192.168.1.1")
 
-modem.backup(maksimum_yedek=2)
+modem.backup(maks_backup=2)
 
 konsol.print(modem.system())
 konsol.print(modem.version())
@@ -55,6 +55,7 @@ konsol.print(modem.hosts())
 
 konsol.print(modem.dsl_reset())
 
+
 konsol.print(modem.get_static_routes())
 
 konsol.print(modem.add_static_route(comment="bakalim.io", host="145.53.10.71", interface="Wireguard2"))
@@ -65,11 +66,18 @@ konsol.print(modem.del_static_route(comment="bakalim.io", network="145.53.10.0",
 
 konsol.print(modem.del_static_route(comment="bakalim.io", host="145.53.10.71", interface="Wireguard2"))
 
+
 for route in modem.get_static_routes():
     konsol.log(route)
     if route.get("comment") == "bakalim.io":
         konsol.print(modem.del_static_route(**route))
         break
+
+
+konsol.print(modem.add_route_with_asn(asn=32934, interface="Wireguard2"))
+
+
+konsol.print(modem.add_route_with_domain(domain="x.com", interface="Wireguard2"))
 ```
 
 ## 💸 Bağış Yap
