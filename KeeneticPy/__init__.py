@@ -210,7 +210,7 @@ class Keenetic:
             assert False, "Lütfen host ya da network ve mask bilgisini girin."
 
         payload["no"] = True
-        print(payload)
+
         istek = self.__oturum.post(
             url  = f"{self.__rci}",
             json = [
