@@ -150,3 +150,73 @@ class Keenetic:
         konsol.log(f"[green][+] {zip_dosyasi} başarıyla oluşturuldu!")
 
         return zip_dosyasi
+
+    def get_static_routes(self) -> list[dict[str, str]]:
+        return self.__oturum.get(
+            url  = f"{self.__rci}",
+            json = {"show":{"ip":{"route":{}}}}
+        ).json().get("ip", {}).get("route", [])
+
+    def add_static_route(self, comment:str, host:str=None, network:str=None, mask:str=None, interface:str="Wireguard2") -> bool:
+        payload = None
+
+        if host:
+            payload = {
+                "comment"   : comment,
+                "interface" : interface,
+                "host"      : host
+            }
+
+        if network and mask:
+            payload = {
+                "comment"   : comment,
+                "interface" : interface,
+                "network"   : network,
+                "mask"      : mask
+            }
+
+        if not payload:
+            assert False, "Lütfen host ya da network ve mask bilgisini girin."
+
+        istek = self.__oturum.post(
+            url  = f"{self.__rci}",
+            json = [
+                {"ip":{"route":payload}},
+                {"system":{"configuration":{"save":{}}}}
+            ]
+        )
+
+        return istek.status_code == 200
+
+    def del_static_route(self, comment:str, host:str=None, network:str=None, mask:str=None, interface:str="Wireguard2") -> bool:
+        payload = None
+
+        if host:
+            payload = {
+                "comment"   : comment,
+                "interface" : interface,
+                "host"      : host
+            }
+
+        if network and mask:
+            payload = {
+                "comment"   : comment,
+                "interface" : interface,
+                "network"   : network,
+                "mask"      : mask
+            }
+
+        if not payload:
+            assert False, "Lütfen host ya da network ve mask bilgisini girin."
+
+        payload["no"] = True
+        print(payload)
+        istek = self.__oturum.post(
+            url  = f"{self.__rci}",
+            json = [
+                {"ip":{"route":payload}},
+                {"system":{"configuration":{"save":{}}}}
+            ]
+        )
+
+        return istek.status_code == 200
