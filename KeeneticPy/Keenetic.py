@@ -7,7 +7,7 @@ from zipfile   import ZipFile, ZIP_DEFLATED
 from os        import remove, listdir
 from datetime  import datetime
 from Kekik     import slugify
-from .         import cidr2mask, asn2cidr, domain2ip
+from .BGPTools import cidr2mask, asn2cidr, domain2ip
 
 class Keenetic:
     def __init__(self, user:str="admin", password:str="", ip:str="192.168.1.1"):
