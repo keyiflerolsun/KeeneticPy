@@ -231,6 +231,8 @@ class Keenetic:
                 else:
                     konsol.log(f"[red][!] {subnet} » {veri.get('comment')} » eklenemedi!")
 
+            return True
+
         for ip in domain_data["ipler"]:
             veri = {"comment": domain_data["domain"], "host": ip, "interface": interface}
             if self.add_static_route(**veri):
