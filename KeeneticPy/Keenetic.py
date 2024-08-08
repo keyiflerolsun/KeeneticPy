@@ -198,7 +198,7 @@ class Keenetic:
             ]
         )
 
-        self.clean_multiple_routes()
+        # self.clean_multiple_routes() # ! Sanırım bu işi Keenetic zaten yapıyor
 
         return istek.status_code == 200
 
@@ -283,5 +283,5 @@ class Keenetic:
                 eldekiler.add(veri)
                 continue
     
-            konsol.log("[red][!] Eş bir kayıt bulundu ve silindi! » ", veri)
+            konsol.log(f"[red][!] Eş bir kayıt bulundu ve silindi! » {route}")
             self.del_static_route(**route)
