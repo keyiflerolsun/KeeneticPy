@@ -32,6 +32,8 @@ KeeneticPy ist ein fortschrittliches Python-Paket und CLI-Tool für KeeneticOS-b
 * 🔄 **Massen-Routensynchronisation**: Synchronisieren statischer Routen aus Web-URLs oder lokalen Dateien mit automatischem Bereinigen veralteter Einträge (`route sync`).
 * 📶 **4G/LTE-Modem- & SMS-Verwaltung**: Überwachung von Mobilfunksignalen (RSRP, RSRQ, SINR, Band, Provider), Empfangen und Senden von SMS sowie USSD-Code-Abfragen (z.B. Guthaben `*100#`).
 * 👥 **Client-Steuerung & Bandbreiten-Drosselung**: Download-/Upload-Limits pro MAC-Adresse, Internetzugriff sperren/freigeben und statische DHCP-Reservierungen.
+* 📶 **DSL- & Mesh-Diagnose**: Rohe VDSL2/ADSL-Treiberstatistik in lesbare SNR-/Dämpfungs-/Fehlertabellen umwandeln (`dsl stats`, `dsl reset`) und Mesh-Wi-Fi-System (MWS) Extender-Knoten mit CPU/RAM/Backhaul anzeigen (`mesh`).
+* 🔄 **Live-Watch-Modus**: `--watch` zu `hosts`, `mesh` oder `dsl stats` hinzufügen für ein sich automatisch aktualisierendes Terminal-Dashboard.
 * 📊 **Integrierter Prometheus Exporter**: Live-Metriken des Routers und der Clients für Grafana-Dashboards bereitstellen (`keenetic exporter`).
 * 💻 **Vollständiges CLI**: Den Router komfortabel direkt aus dem Terminal verwalten.
 * 💾 **Smarte Backup-Rotation**: Zeitgestempelte ZIP-Archive von Firmware und `startup-config.txt` herunterladen und rotieren.
@@ -60,6 +62,17 @@ keenetic --password "dein_passwort" info
 
 # Verbundene Hotspot-Clients und Echtzeit-Traffic (Rx/Tx) auflisten
 keenetic --password "dein_passwort" hosts
+
+# Mesh-Wi-Fi-System Extender-Knoten anzeigen (oder einen Knoten per CID neustarten)
+keenetic --password "dein_passwort" mesh
+keenetic --password "dein_passwort" mesh reboot <cid>
+
+# DSL-Leitungsdiagnose (SNR, Dämpfung, Fehlerzähler) oder Leitung zurücksetzen
+keenetic --password "dein_passwort" dsl stats
+keenetic --password "dein_passwort" dsl reset
+
+# Sich automatisch aktualisierendes Dashboard (funktioniert mit hosts / mesh / dsl stats)
+keenetic --password "dein_passwort" hosts --watch --interval 5
 
 # Domain-Traffic über WireGuard-VPN leiten
 keenetic --password "dein_passwort" route add-domain discord.com --interface Wireguard0

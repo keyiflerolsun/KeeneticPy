@@ -1,7 +1,7 @@
 # Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
 from unittest.mock  import patch, MagicMock
-from KeeneticPy.CLI import build_parser, get_router, cmd_info, cmd_hosts, cmd_route, cmd_client, cmd_modem, cmd_backup, cmd_reboot, cmd_dsl
+from KeeneticPy.CLI import build_parser, get_router, cmd_info, cmd_hosts, cmd_route, cmd_client, cmd_modem, cmd_backup, cmd_reboot, cmd_dsl, cmd_mesh, run_watchable
 
 def test_cli_parser_global_args():
     parser = build_parser()
@@ -45,6 +45,47 @@ def test_cli_parser_subcommands():
     assert args.subcommand == "exporter"
     assert args.port == 9200
 
+def test_cli_parser_watch_flags():
+    parser = build_parser()
+
+    args = parser.parse_args(["hosts", "-w", "-n", "5"])
+    assert args.watch    is True
+    assert args.interval == 5.0
+
+    args = parser.parse_args(["mesh", "--watch"])
+    assert args.watch    is True
+    assert args.interval == 2.0
+
+    args = parser.parse_args(["dsl", "stats", "-w"])
+    assert args.watch is True
+
+    args = parser.parse_args(["dsl", "reset"])
+    assert not hasattr(args, "watch")
+
+def test_run_watchable_no_watch():
+    parser = build_parser()
+    args   = parser.parse_args(["hosts"])
+    render = MagicMock(return_value="table")
+
+    with patch("KeeneticPy.CLI.Base.console") as mock_console:
+        mock_console.status.return_value.__enter__.return_value = None
+        run_watchable(args, render)
+
+    render.assert_called_once()
+    mock_console.print.assert_called_once_with("table")
+
+def test_run_watchable_watch_stops_on_interrupt():
+    parser = build_parser()
+    args   = parser.parse_args(["hosts", "-w", "-n", "0"])
+    render = MagicMock(return_value="table")
+
+    with patch("KeeneticPy.CLI.Base.time.sleep", side_effect=KeyboardInterrupt):
+        with patch("KeeneticPy.CLI.Base.Live") as mock_live:
+            mock_live.return_value.__enter__.return_value = MagicMock()
+            run_watchable(args, render)
+
+    assert render.call_count >= 1
+
 def test_get_router_env_vars(monkeypatch):
     monkeypatch.setenv("KEENETIC_USER", "env_user")
     monkeypatch.setenv("KEENETIC_PASSWORD", "env_pass")
@@ -66,15 +107,17 @@ def test_cmd_info_execution():
     parser = build_parser()
     args   = parser.parse_args(["info"])
 
-    mock_router                        = MagicMock()
-    mock_router.system.return_value    = {"uptime" : 120, "cpuload" : 5}
-    mock_router.version.return_value   = {"model" : "Hero", "title" : "4.0", "device" : "TestDev"}
-    mock_router.global_ip.return_value = {"ipv4" : "1.2.3.4", "ipv6" : None}
+    mock_router                              = MagicMock()
+    mock_router.system.return_value          = {"uptime" : 120, "cpuload" : 5}
+    mock_router.version.return_value         = {"model" : "Hero", "title" : "4.0", "device" : "TestDev"}
+    mock_router.global_ip.return_value       = {"ipv4" : "1.2.3.4", "ipv6" : None}
+    mock_router.internet_status.return_value = {"internet" : True, "gateway" : {"interface" : "PPPoE0"}}
 
     with patch("KeeneticPy.CLI.SystemCmds.get_router") as mock_get:
         mock_get.return_value.__enter__.return_value = mock_router
         cmd_info(args)
         mock_router.system.assert_called_once()
+        mock_router.internet_status.assert_called_once()
 
 def test_cmd_client_execution():
     parser      = build_parser()
@@ -144,3 +187,60 @@ def test_cmd_system_and_route_execution():
         mock_get_net.return_value.__enter__.return_value = mock_router
         cmd_route(parser.parse_args(["route", "list"]))
         cmd_route(parser.parse_args(["route", "clean"]))
+
+def test_cmd_mesh_execution():
+    parser                              = build_parser()
+    mock_router                         = MagicMock()
+    mock_router.mesh_nodes.return_value = [{
+        "cid"                : "c1",
+        "mac"                : "aa:bb:cc:dd:ee:ff",
+        "known-host"         : "Extender",
+        "ip"                 : "192.168.1.2",
+        "mode"               : "extender",
+        "fw"                 : "5.1.4",
+        "internet-available" : True,
+        "associations"       : 2,
+        "system"             : {"cpuload" : 1, "memory" : "1000/2000", "uptime" : "100"},
+        "rci"                : {"errors" : 0},
+        "backhaul"           : {"speed" : "1000", "duplex" : "full"}
+    }]
+
+    with patch("KeeneticPy.CLI.SystemCmds.get_router") as mock_get:
+        mock_get.return_value.__enter__.return_value = mock_router
+        cmd_mesh(parser.parse_args(["mesh"]))
+        mock_router.mesh_nodes.assert_called_once()
+
+def test_cmd_mesh_no_nodes():
+    parser                              = build_parser()
+    mock_router                         = MagicMock()
+    mock_router.mesh_nodes.return_value = []
+
+    with patch("KeeneticPy.CLI.SystemCmds.get_router") as mock_get:
+        mock_get.return_value.__enter__.return_value = mock_router
+        cmd_mesh(parser.parse_args(["mesh"]))
+
+def test_cli_parser_mesh_reboot():
+    parser = build_parser()
+    args   = parser.parse_args(["mesh", "reboot", "a4a2506e-4dae-11ed-9396-3be15a4fcdf3"])
+    assert args.mesh_action == "reboot"
+    assert args.cid         == "a4a2506e-4dae-11ed-9396-3be15a4fcdf3"
+
+def test_cmd_mesh_reboot_execution():
+    parser                                    = build_parser()
+    mock_router                               = MagicMock()
+    mock_router.reboot_mesh_node.return_value = True
+
+    with patch("KeeneticPy.CLI.SystemCmds.get_router") as mock_get:
+        mock_get.return_value.__enter__.return_value = mock_router
+        cmd_mesh(parser.parse_args(["mesh", "reboot", "c1"]))
+        mock_router.reboot_mesh_node.assert_called_once_with("c1")
+        mock_router.mesh_nodes.assert_not_called()
+
+def test_cmd_mesh_reboot_failure():
+    parser                                    = build_parser()
+    mock_router                               = MagicMock()
+    mock_router.reboot_mesh_node.return_value = False
+
+    with patch("KeeneticPy.CLI.SystemCmds.get_router") as mock_get:
+        mock_get.return_value.__enter__.return_value = mock_router
+        cmd_mesh(parser.parse_args(["mesh", "reboot", "c1"]))

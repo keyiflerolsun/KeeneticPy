@@ -1,7 +1,8 @@
 # Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
-from .SystemCmds  import cmd_info, cmd_hosts, cmd_backup, cmd_reboot, cmd_dsl
+from .SystemCmds  import cmd_info, cmd_hosts, cmd_backup, cmd_reboot, cmd_dsl, cmd_mesh
 from .NetworkCmds import cmd_route, cmd_client, cmd_modem, cmd_exporter
+from .Base        import add_watch_args
 import argparse
 
 def build_parser() -> argparse.ArgumentParser:
@@ -17,6 +18,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_info.set_defaults(func=cmd_info)
 
     p_hosts = sub.add_parser("hosts", help="Bağlı hotspot cihazlarını listele")
+    add_watch_args(p_hosts)
     p_hosts.set_defaults(func=cmd_hosts)
 
     p_route = sub.add_parser("route", help="Statik ve VPN rota yönetimi")
@@ -99,9 +101,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_dsl   = sub.add_parser("dsl", help="DSL işlemleri")
     d_sub   = p_dsl.add_subparsers(dest="dsl_action", required=True)
     d_stats = d_sub.add_parser("stats", help="DSL istatistiklerini göster")
+    add_watch_args(d_stats)
     d_stats.set_defaults(func=cmd_dsl)
     d_reset = d_sub.add_parser("reset", help="DSL bağlantısını sıfırla")
     d_reset.set_defaults(func=cmd_dsl)
+
+    p_mesh   = sub.add_parser("mesh", help="Mesh Wi-Fi System üyelerini göster")
+    add_watch_args(p_mesh)
+    p_mesh.set_defaults(func=cmd_mesh)
+    mesh_sub = p_mesh.add_subparsers(dest="mesh_action")
+    m_reboot = mesh_sub.add_parser("reboot", help="Mesh üyesini yeniden başlat")
+    m_reboot.add_argument("cid", help="Mesh üyesi CID değeri (mesh komutunun çıktısından alınır)")
+    m_reboot.set_defaults(func=cmd_mesh)
 
     return parser
 

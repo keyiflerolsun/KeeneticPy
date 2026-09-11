@@ -115,6 +115,80 @@ def call_router(router, method:str, *args, **kwargs):
         return asyncio.run(res)
     return res
 
+def parse_dsl_stats(raw:dict) -> dict:
+    """Parse 'more proc:/driver/ensoc_dsl/dsl_stats' RCI output into general / DS-US paired fields."""
+    lines   = raw.get("parse", {}).get("message", [])
+    general = {}
+    pairs   = {}
+    section = None
+    for line in lines:
+        line = line.rstrip()
+        if not line.strip():
+            continue
+
+        if ":" not in line:
+            section = line.strip()
+            continue
+
+        key, _, val = line.partition(":")
+        key = key.strip()
+        if key.lower().startswith("tone"):
+            continue
+
+        tokens = re.split(r"\s{2,}", val.strip())
+        tokens = [t for t in tokens if t]
+        if not tokens:
+            continue
+
+        label = f"{section} - {key}" if section and key.lower().startswith("band") else key
+        if len(tokens) >= 2:
+            pairs[label] = (tokens[0], tokens[1])
+        else:
+            general[key] = tokens[0]
+
+    return {"general" : general, "pairs" : pairs}
+
+def describe_host_link(mws:dict) -> str:
+    """Describe a hotspot host's physical/Wi-Fi link from its RCI 'mws' info bag."""
+    if not mws:
+        return "-"
+    if "rssi" in mws:
+        return f"📶 {mws['rssi']} dBm"
+    if "port" in mws:
+        return f"🔌 Port {mws['port']}"
+    return "-"
+
+def parse_mesh_nodes(members:list) -> list[dict]:
+    """Parse 'show/mws/member' RCI output into normalized mesh node list."""
+    nodes = []
+    for m in members:
+        system   = m.get("system", {})
+        rci_info = m.get("rci", {})
+        backhaul = m.get("backhaul") or {}
+        memory   = system.get("memory", "")
+
+        mem_pct = None
+        if isinstance(memory, str) and "/" in memory:
+            used, total = memory.split("/", 1)
+            with suppress(Exception):
+                mem_pct = round(float(used) * 100 / float(total), 1)
+
+        nodes.append({
+            "name"         : m.get("known-host") or m.get("model") or m.get("mac"),
+            "mac"          : m.get("mac"),
+            "ip"           : m.get("ip"),
+            "model"        : m.get("model"),
+            "mode"         : m.get("mode"),
+            "firmware"     : m.get("fw"),
+            "connected"    : rci_info.get("errors", 0) == 0 and bool(m.get("internet-available", False)),
+            "associations" : m.get("associations", 0),
+            "cpuload"      : system.get("cpuload"),
+            "memory_pct"   : mem_pct,
+            "uptime"       : system.get("uptime"),
+            "backhaul"     : f"{backhaul['speed']} Mbps ({backhaul.get('duplex', '?')})" if backhaul.get("speed") else None
+        })
+    return nodes
+
 def call_rci_status(router, payload:dict|list) -> bool:
     """Execute RCI payload and return boolean success for both sync and async routers."""
     target = router.__dict__.get("_async_client", router)

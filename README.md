@@ -32,6 +32,8 @@ KeeneticPy is an advanced Python package and CLI tool for Keenetic routers power
 * 🔄 **Bulk Route Sync**: Synchronize static routes directly from URLs or local text files with automatic pruning of obsolete entries (`route sync`).
 * 📶 **4G/LTE Modem & SMS Management**: Monitor cellular signal quality (RSRP, RSRQ, SINR, Band, Carrier), read incoming SMS, send SMS messages, and execute USSD codes.
 * 👥 **Client & Bandwidth Controls**: Throttle download/upload speeds per MAC, toggle internet access (block/unblock), and configure static DHCP leases.
+* 📶 **DSL & Mesh Diagnostics**: Parse raw VDSL2/ADSL driver stats into readable SNR/attenuation/error tables (`dsl stats`, `dsl reset`), and list Mesh Wi-Fi System (MWS) extender nodes with CPU/RAM/backhaul info (`mesh`).
+* 🔄 **Live Watch Mode**: Add `--watch` to `hosts`, `mesh`, or `dsl stats` for an auto-refreshing terminal dashboard.
 * 📊 **Built-in Prometheus Exporter**: Serve real-time system, network traffic, and client metrics for Prometheus and Grafana dashboards (`keenetic exporter`).
 * 💻 **Feature-Rich CLI**: Manage your router entirely from the terminal.
 * 💾 **Smart Backup Rotation**: Automatically download and rotate timestamped zip archives containing firmware and `startup-config.txt`.
@@ -60,6 +62,17 @@ keenetic --password "your_password" info
 
 # List connected hotspot clients and real-time traffic (Rx/Tx)
 keenetic --password "your_password" hosts
+
+# Show Mesh Wi-Fi System extender nodes (or reboot one by its CID)
+keenetic --password "your_password" mesh
+keenetic --password "your_password" mesh reboot <cid>
+
+# DSL line diagnostics (SNR, attenuation, error counters), or reset the link
+keenetic --password "your_password" dsl stats
+keenetic --password "your_password" dsl reset
+
+# Live-refreshing dashboard (works with hosts / mesh / dsl stats)
+keenetic --password "your_password" hosts --watch --interval 5
 
 # Route a domain to WireGuard VPN
 keenetic --password "your_password" route add-domain discord.com --interface Wireguard0

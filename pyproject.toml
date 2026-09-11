@@ -1,6 +1,6 @@
 [project]
 name        = "KeeneticPy"
-version     = "3.0.0"
+version     = "3.0.1"
 description = "Modern Python Library and CLI for Keenetic Routers (KeeneticOS RCI)"
 keywords    = ["KeeneticPy", "Keenetic", "router", "rci", "wireguard", "bgp", "KekikAkademi", "keyiflerolsun"]
 license     = { text = "GPLv3+" }

@@ -7,6 +7,7 @@ from .Exceptions import KeeneticAuthError, KeeneticRCIError, KeeneticConnectionE
 from ..Libs      import slugify, cidr2mask, build_route_payload, extract_wan_ips, save_backup_archive, asn2cidr, domain2ip
 import logging
 import os
+import re
 
 logger = logging.getLogger("KeeneticPy.async")
 
@@ -116,6 +117,32 @@ class AsyncKeenetic:
     async def dsl_stats(self) -> dict:
         """Get DSL line statistics."""
         return await self.rci({"parse" : "more proc:/driver/ensoc_dsl/dsl_stats"})
+
+    async def mesh_nodes(self) -> list[dict]:
+        """Get Keenetic Mesh Wi-Fi System (MWS) member nodes."""
+        if not self._yetkili:
+            await self.authenticate()
+        try:
+            data = (await self.oturum.get(f"{self.rci_url}show/mws/member")).json()
+            return data if isinstance(data, list) else []
+        except Exception:
+            return []
+
+    async def reboot_mesh_node(self, cid:str) -> bool:
+        """Reboot a specific Mesh Wi-Fi System (MWS) member node by its CID."""
+        if not re.fullmatch(r"[\w-]+", cid or ""):
+            raise ValueError("Invalid mesh node cid.")
+        try:
+            await self.rci({"parse" : f"mws member {cid} reboot"})
+            return True
+        except Exception:
+            return False
+
+    async def internet_status(self) -> dict:
+        """Get WAN internet connectivity health (gateway/DNS/captive-portal checks)."""
+        if not self._yetkili:
+            await self.authenticate()
+        return (await self.oturum.get(f"{self.rci_url}show/internet/status")).json()
 
     async def dsl_reset(self) -> bool:
         """Reset DSL interface."""

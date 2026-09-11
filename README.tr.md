@@ -32,6 +32,8 @@ Keenetic router'ların `RCI` (Remote Control Interface) API'si üzerinden yönet
 * 🔄 **Toplu Rota Senkronizasyonu**: URL'den veya yerel dosyalardan IP/CIDR listelerini router'a otomatik senkronize etme, listeden kalkan eski rotaları otomatik temizleme (`route sync`).
 * 📶 **4G/LTE Hücresel Modem & SMS**: Sinyal gücü (RSRP, RSRQ, SINR, Band, Operatör) izleme, gelen SMS'leri okuma, SMS gönderme ve USSD sorguları çalıştırma.
 * 👥 **İstemci Yönetimi & Hız Sınırı**: Cihaz bazlı indirme/yükleme hız sınırı koyma, internet erişimini tek tıkla engelleme/açma ve statik DHCP rezervasyonu.
+* 📶 **DSL & Mesh Diyagnostiği**: Ham VDSL2/ADSL sürücü çıktısını okunabilir SNR/attenuation/hata tablolarına dönüştürme (`dsl stats`, `dsl reset`), Mesh Wi-Fi System (MWS) uzatıcı düğümlerini CPU/RAM/backhaul bilgisiyle listeleme (`mesh`).
+* 🔄 **Canlı (Live) İzleme Modu**: `hosts`, `mesh` veya `dsl stats` komutlarına `--watch` ekleyerek kendini otomatik yenileyen terminal ekranı.
 * 📊 **Dahili Prometheus Exporter**: Router ve bağlı cihaz metriklerini Prometheus ve Grafana için canlı HTTP endpoint olarak sunma (`keenetic exporter`).
 * 💻 **Zengin CLI (Terminal Aracı)**: Router'ınızı doğrudan terminalden yönetebileceğiniz kapsamlı komut seti.
 * 💾 **Akıllı Yedekleme**: Firmware ve startup-config dosyalarını zip formatında tarih ve rotasyonla arşivleme.
@@ -60,6 +62,17 @@ keenetic --password "şifreniz" info
 
 # Bağlı istemcileri ve gerçek zamanlı veri akışını (Rx/Tx) listeleme
 keenetic --password "şifreniz" hosts
+
+# Mesh Wi-Fi System uzatıcı düğümlerini göster (veya CID ile birini yeniden başlat)
+keenetic --password "şifreniz" mesh
+keenetic --password "şifreniz" mesh reboot <cid>
+
+# DSL hat diyagnostiği (SNR, attenuation, hata sayaçları) veya hattı sıfırlama
+keenetic --password "şifreniz" dsl stats
+keenetic --password "şifreniz" dsl reset
+
+# Canlı yenilenen ekran (hosts / mesh / dsl stats ile çalışır)
+keenetic --password "şifreniz" hosts --watch --interval 5
 
 # Discord alan adını Wireguard arayüzüne yönlendirme
 keenetic --password "şifreniz" route add-domain discord.com --interface Wireguard0

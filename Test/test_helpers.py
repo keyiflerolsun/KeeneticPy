@@ -1,6 +1,6 @@
 # Bu araç @keyiflerolsun tarafından | @KekikAkademi için yazılmıştır.
 
-from KeeneticPy.Libs.Helpers import slugify, cidr2mask, mask2cidr, format_bytes, build_route_payload, extract_wan_ips, save_backup_archive
+from KeeneticPy.Libs.Helpers import slugify, cidr2mask, mask2cidr, format_bytes, build_route_payload, extract_wan_ips, save_backup_archive, parse_dsl_stats, parse_mesh_nodes, describe_host_link
 from zipfile                 import ZipFile
 import os
 import pytest
@@ -118,3 +118,96 @@ def test_save_backup_archive(tmp_path):
 
     remaining = [f for f in os.listdir(target_dir) if f.endswith(".zip")]
     assert len(remaining) == 2
+
+def test_parse_dsl_stats():
+    raw = {
+        "parse"   : {
+            "message" : [
+                "DSL link status:               showtime            ",
+                "Uptime:                        3 day, 16:26:08     ",
+                "Mode:                          ITU G.993.2 (VDSL2) ",
+                "",
+                "Fast (Kbps):                   76795               15359         ",
+                "FEC errors fast:               2903088693          67                  ",
+                "",
+                "SNR margin (dB)",
+                "Band 0:                        3.9                 18.1                ",
+                "Band 3:                        N/A                 N/A                 ",
+                "",
+                "Carrier load (bits per tone)",
+                "tone   0-31 : 00 00 00 03 45 66  66 77 77 77 66 66 55 54 43 21",
+            ],
+            "prompt" : "(config)"
+        }
+    }
+    parsed = parse_dsl_stats(raw)
+
+    assert parsed["general"] == {
+        "DSL link status" : "showtime",
+        "Uptime"          : "3 day, 16:26:08",
+        "Mode"            : "ITU G.993.2 (VDSL2)"
+    }
+    assert parsed["pairs"] == {
+        "Fast (Kbps)"              : ("76795", "15359"),
+        "FEC errors fast"          : ("2903088693", "67"),
+        "SNR margin (dB) - Band 0" : ("3.9", "18.1"),
+        "SNR margin (dB) - Band 3" : ("N/A", "N/A")
+    }
+
+def test_parse_dsl_stats_empty():
+    assert parse_dsl_stats({}) == {"general" : {}, "pairs" : {}}
+    assert parse_dsl_stats({"parse" : {"message" : []}}) == {"general" : {}, "pairs" : {}}
+
+def test_parse_mesh_nodes():
+    members = [
+        {
+            "cid"                : "a4a2506e-4dae-11ed-9396-3be15a4fcdf3",
+            "model"              : "Sprinter (KN-3710)",
+            "mac"                : "50:ff:20:90:63:64",
+            "known-host"         : "Üst - Sprinter (KN-3710)",
+            "ip"                 : "192.168.1.2",
+            "mode"               : "extender",
+            "fw"                 : "5.1.4",
+            "internet-available" : True,
+            "associations"       : 4,
+            "system"             : {"cpuload" : 2, "memory" : "95804/262144", "uptime" : "1184489"},
+            "rci"                : {"errors" : 0},
+            "backhaul"           : {"speed" : "1000", "duplex" : "full"}
+        },
+        {
+            "cid"                : "b5b3617f-5eaf-22fe-a4a7-4cf26b5edea4",
+            "model"              : "Hero DSL (KN-2410)",
+            "mac"                : "50:ff:20:75:58:40",
+            "known-host"         : None,
+            "ip"                 : "192.168.1.3",
+            "mode"               : "extender",
+            "fw"                 : "5.1.4",
+            "internet-available" : False,
+            "associations"       : 0,
+            "system"             : {"cpuload" : 1, "memory" : "76020/262144", "uptime" : "500"},
+            "rci"                : {"errors" : 3},
+            "backhaul"           : {}
+        }
+    ]
+    nodes = parse_mesh_nodes(members)
+    assert len(nodes) == 2
+
+    connected = nodes[0]
+    assert connected["name"] == "Üst - Sprinter (KN-3710)"
+    assert connected["connected"] is True
+    assert connected["memory_pct"] == 36.5
+    assert connected["backhaul"] == "1000 Mbps (full)"
+
+    disconnected = nodes[1]
+    assert disconnected["name"] == "Hero DSL (KN-2410)"
+    assert disconnected["connected"] is False
+    assert disconnected["backhaul"] is None
+
+def test_parse_mesh_nodes_empty():
+    assert parse_mesh_nodes([]) == []
+
+def test_describe_host_link():
+    assert describe_host_link(None) == "-"
+    assert describe_host_link({}) == "-"
+    assert describe_host_link({"rssi" : -63, "ap" : "WifiMaster1/AccessPoint1"}) == "📶 -63 dBm"
+    assert describe_host_link({"port" : "3", "speed" : 1000, "duplex" : True}) == "🔌 Port 3"
